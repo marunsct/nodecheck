@@ -1,7 +1,7 @@
 {
   "name": "nodecheck",
   "version": "1.0.0",
-  "description": "A simple CAP project.",
+  "description": "NodeCheck - Repository Dependency Analyzer. A CAP fullstack application for analyzing and managing Node.js dependencies.",
   "dependencies": {
     "@cap-js/hana": "^2",
     "@sap/cds": "^9",
@@ -14,8 +14,20 @@
     "@cap-js/sqlite": "^2"
   },
   "scripts": {
-    "start": "cds-serve"
+    "start": "cds-serve",
+    "watch": "cds watch",
+    "deploy": "cds deploy --to sqlite",
+    "test:service": "node test-service.js"
   },
   "private": true,
-  "cds": {}
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "url": "db.sqlite"
+        }
+      }
+    }
+  }
 }
