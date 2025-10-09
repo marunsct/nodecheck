@@ -25,6 +25,33 @@ File or Folder | Purpose
 
 ## Getting Started
 
+> 📖 **New to NodeCheck?** Check out the [comprehensive Usage Guide](USAGE.md) for step-by-step instructions!
+
+### Quick Start
+
+1. **Clone and install:**
+   ```bash
+   git clone <repo-url>
+   cd nodecheck
+   npm install
+   ```
+
+2. **Configure GitHub token:**
+   ```bash
+   cp .env.example .env
+   # Edit .env and add your GitHub token
+   ```
+
+3. **Start the application:**
+   ```bash
+   npm run deploy  # Initialize database
+   npm run watch   # Start server
+   ```
+
+4. **Open in browser:**
+   - UI: http://localhost:4004/
+   - Service: http://localhost:4004/odata/v4/repository
+
 ### Prerequisites
 
 - Node.js 18.x or later
@@ -108,6 +135,36 @@ Currently supported:
 Planned:
 - ⏳ GitLab
 - ⏳ Bitbucket
+
+## Quick Reference
+
+### API Endpoints
+
+```bash
+# Fetch repositories from GitHub
+POST /odata/v4/repository/fetchRepositories
+
+# Analyze dependencies
+POST /odata/v4/repository/analyzeRepositories
+Body: {"repositoryIds": ["uuid1", "uuid2"]}
+
+# Upgrade packages
+POST /odata/v4/repository/upgradePackages
+Body: {"repositoryId": "uuid", "packageNames": ["pkg1", "pkg2"]}
+```
+
+### Status Indicators
+
+- 🔴 **Red**: Critical or high severity vulnerabilities
+- 🟡 **Yellow**: Moderate severity vulnerabilities
+- 🟢 **Green**: No vulnerabilities detected
+
+### Recommended Version
+
+The recommended version is **1 minor version behind the latest** to reduce breaking change risk:
+- Latest: `4.19.2` → Recommended: `4.18.0`
+
+For detailed usage instructions, see [USAGE.md](USAGE.md).
 
 ## Architecture
 
