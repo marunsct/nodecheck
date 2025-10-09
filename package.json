@@ -1,0 +1,21 @@
+{
+  "name": "nodecheck",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "dependencies": {
+    "@cap-js/hana": "^2",
+    "@sap/cds": "^9",
+    "axios": "^1.12.2",
+    "express": "^4",
+    "octokit": "^5.0.3",
+    "semver": "^7.7.3"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2"
+  },
+  "scripts": {
+    "start": "cds-serve"
+  },
+  "private": true,
+  "cds": {}
+}
