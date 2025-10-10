@@ -1,0 +1,103 @@
+{
+  "_version": "1.59.0",
+  "sap.app": {
+    "id": "nodecheck.repositories",
+    "type": "application",
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "1.0.0"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/repository/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "routing": {
+      "routes": [
+        {
+          "pattern": ":?query:",
+          "name": "RepositoriesList",
+          "target": "RepositoriesList"
+        },
+        {
+          "pattern": "Repositories({key}):?query:",
+          "name": "RepositoriesObjectPage",
+          "target": "RepositoriesObjectPage"
+        }
+      ],
+      "targets": {
+        "RepositoriesList": {
+          "type": "Component",
+          "id": "RepositoriesList",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "entitySet": "Repositories",
+              "variantManagement": "Page",
+              "navigation": {
+                "Repositories": {
+                  "detail": {
+                    "route": "RepositoriesObjectPage"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "RepositoriesObjectPage": {
+          "type": "Component",
+          "id": "RepositoriesObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "entitySet": "Repositories"
+            }
+          }
+        }
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "nodecheck.repositories.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      }
+    },
+    "dependencies": {
+      "minUI5Version": "1.120.0",
+      "libs": {
+        "sap.fe.templates": {}
+      }
+    }
+  }
+}
