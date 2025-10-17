@@ -8,8 +8,11 @@ service RepositoryService {
   // Dependencies entity for detailed view
   entity Dependencies as projection on nodecheck.Dependencies;
   
-  // Audit results
+  // Audit results with detailed security advisories
   entity AuditResults as projection on nodecheck.AuditResults;
+  entity SecurityAdvisories as projection on nodecheck.SecurityAdvisories;
+  entity AdvisoryFindings as projection on nodecheck.AdvisoryFindings;
+  entity AdvisoryActions as projection on nodecheck.AdvisoryActions;
 
   // Action to fetch repositories from GitHub
   action fetchRepositories() returns array of {

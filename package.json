@@ -5,19 +5,28 @@
   "dependencies": {
     "@cap-js/hana": "^2",
     "@sap/cds": "^9",
+    "@sap/xsenv": "^6.0.0",
+    "@sap/xssec": "^4",
     "axios": "^1.12.2",
     "express": "^4",
     "octokit": "^5.0.3",
     "semver": "^7.7.3"
   },
   "devDependencies": {
-    "@cap-js/sqlite": "^2"
+    "@cap-js/sqlite": "^2",
+    "@sap/cds-dk": "^9",
+    "rimraf": "^5.0.5",
+    "mbt": "^1.2.29",
+    "cds-plugin-ui5": "^0.13.0"
   },
   "scripts": {
     "start": "cds-serve",
-    "watch": "cds watch",
-    "deploy": "cds deploy --to sqlite",
-    "test:service": "node test-service.js"
+    "watch": "cds watch --profile hybrid",
+    "deploy": "cf deploy mta_archives/archive.mtar --retries 1",
+    "test:service": "node test-service.js",
+    "undeploy": "cf undeploy nodecheck --delete-services --delete-service-keys --delete-service-brokers",
+    "build": "rimraf resources mta_archives && mbt build --mtar archive",
+    "watch-repositories1": "cds watch --open nodecheck.repositories1/index.html?sap-ui-xx-viewCache=false --livereload false"
   },
   "private": true,
   "cds": {
@@ -27,7 +36,25 @@
         "credentials": {
           "url": "db.sqlite"
         }
-      }
+      },
+      "[production]": {
+        "db": {
+          "kind": "hana"
+        },
+        "auth": "xsuaa"
+      },
+      "[hybrid]": {
+        "auth": "xsuaa"
+      },
+      "destinations": true,
+      "html5-repo": true,
+      "workzone": true
     }
-  }
+  },
+  "workspaces": [
+    "app/*"
+  ],
+  "sapux": [
+    "app/repositories1"
+  ]
 }

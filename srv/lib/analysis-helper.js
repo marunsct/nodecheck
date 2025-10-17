@@ -99,15 +99,101 @@ function determineStatus(auditResults) {
  * Run npm audit on dependencies (simulated for now)
  */
 async function auditDependencies(dependencies) {
-  // For now, return a mock audit result
-  // In production, this would run npm audit via child_process
-  return [
-    { severity: 'info', count: 0 },
-    { severity: 'low', count: 0 },
-    { severity: 'moderate', count: 0 },
-    { severity: 'high', count: 0 },
-    { severity: 'critical', count: 0 },
-  ];
+  const severities = ['info', 'low', 'moderate', 'high', 'critical'];
+  const emptyResult = severities.map(severity => ({ severity, count: 0 }));
+
+  if (!dependencies || Object.keys(dependencies).length === 0) {
+    return emptyResult;
+  }
+
+  // Create payload with required structure
+  const payload = {
+    name: 'Package Analysis', // Use actual repository name if available
+    version: '1.0.0',
+    requires: {}, // Object mapping package names to versions
+    dependencies: {}, // Object with detailed package info
+  };
+
+  for (const [packageName, rawVersion] of Object.entries(dependencies)) {
+    const cleaned = typeof rawVersion === 'string' ? rawVersion.trim() : '';
+    const coerced = semver.coerce(cleaned);
+
+    if (!coerced) {
+      continue;
+    }
+    
+    // Add to requires object
+    payload.requires[packageName] = coerced.version;
+    
+    // Add to dependencies object with correct structure
+    payload.dependencies[packageName] = {
+      version: coerced.version,
+    };
+  }
+
+  if (Object.keys(payload.dependencies).length === 0) {
+    return emptyResult;
+  }
+
+  const registryUrl = process.env.NPM_REGISTRY_URL || 'https://registry.npmjs.org';
+  const auditUrl = `${registryUrl.replace(/\/$/, '')}/-/npm/v1/security/audits`;
+
+  try {
+    const response = await axios.post(auditUrl, payload, {
+      timeout: 10000,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    });
+
+    // Extract basic vulnerability counts
+    const vulnerabilities = response.data?.metadata?.vulnerabilities || {};
+    const result = severities.map(severity => ({
+      severity,
+      count: vulnerabilities[severity] || 0,
+    }));
+
+    // Extract detailed advisories if available
+    const advisories = response.data?.advisories || {};
+    if (Object.keys(advisories).length > 0) {
+      // Create detailed report with additional info
+      const detailedReport = Object.values(advisories).map(advisory => ({
+        id: advisory.id,
+        packageName: advisory.module_name,
+        title: advisory.title,
+        severity: advisory.severity,
+        vulnerableVersions: advisory.vulnerable_versions,
+        recommendation: advisory.recommendation,
+        url: advisory.url,
+        cves: advisory.cves || [],
+        cvss: advisory.cvss?.score,
+        findings: advisory.findings?.map(f => ({ 
+          version: f.version,
+          paths: f.paths 
+        })) || []
+      }));
+      
+      // Add detailed report to the result
+      result.detailedAdvisories = detailedReport;
+      
+      // Add actions recommended (e.g. upgrades)
+      if (response.data?.actions && response.data.actions.length > 0) {
+        result.recommendedActions = response.data.actions.map(action => ({
+          action: action.action,
+          module: action.module,
+          target: action.target,
+          isMajor: action.isMajor,
+          resolves: action.resolves?.map(r => r.id) || []
+        }));
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Error running npm audit:', error.message);
+    return emptyResult;
+  }
 }
 
 module.exports = {

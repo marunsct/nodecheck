@@ -40,7 +40,7 @@ Configure your environment:
 cp .env.example .env
 
 # Edit .env and add your token
-echo "GITHUB_TOKEN=ghp_your_token_here" > .env
+echo "GITHUB_TOKEN=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" > .env
 ```
 
 ### 3. Initialize Database

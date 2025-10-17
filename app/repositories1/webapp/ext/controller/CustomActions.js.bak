@@ -1,0 +1,138 @@
+sap.ui.define([
+    "sap/m/MessageToast",
+    "sap/m/MessageBox",
+    "sap/ui/core/BusyIndicator"
+], function(MessageToast, MessageBox, BusyIndicator) {
+    'use strict';
+    
+    return {
+        /**
+         * Fetch repositories from GitHub and update the database
+         *
+         * @param oContext the context of the page on which the event was fired. `undefined` for list report page.
+         * @param aSelectedContexts the selected contexts of the table rows.
+         */
+        onGetRepo: function(oContext, aSelectedContexts) {
+            BusyIndicator.show(0);
+            
+            try {
+                // Get the OData model
+                const oModel = this.getModel();
+                if (!oModel) {
+                    throw new Error("OData model not found");
+                }
+                
+                // Create a function import call using the OData model
+                const oPromise = new Promise((resolve, reject) => {
+                    oModel.callFunction("/fetchRepositories", {
+                        method: "POST",
+                        success: function(oData) {
+                            resolve(oData);
+                        },
+                        error: function(oError) {
+                            reject(oError);
+                        }
+                    });
+                });
+                
+                // Handle the result
+                oPromise.then((oResult) => {
+                    const aRepositories = Array.isArray(oResult?.value) ? oResult.value : [];
+                    MessageToast.show(`Repository list refreshed (${aRepositories.length} items).`);
+                    
+                    // Refresh the list to show updated data
+                    if (oContext && oContext.getModel) {
+                        oContext.getModel().refresh();
+                    }
+                    
+                    BusyIndicator.hide();
+                }).catch((oError) => {
+                    const sMessage = oError?.message || oError?.responseText || "Something went wrong. Please try again.";
+                    MessageBox.error(sMessage);
+                    BusyIndicator.hide();
+                });
+                
+                return oPromise;
+            } catch (error) {
+                const sMessage = error?.message || error?.responseText || "Something went wrong. Please try again.";
+                MessageBox.error(sMessage);
+            } finally {
+                BusyIndicator.hide();
+            }
+        },
+
+        /**
+         * Run audit analysis on selected repositories
+         *
+         * @param oContext the context of the page on which the event was fired. `undefined` for list report page.
+         * @param aSelectedContexts the selected contexts of the table rows.
+         */
+        onAudit: function(oContext, aSelectedContexts) {
+            if (!aSelectedContexts || aSelectedContexts.length === 0) {
+                MessageToast.show("Select at least one repository to run an audit.");
+                return;
+            }
+
+            BusyIndicator.show(0);
+
+            try {
+                const aRepositoryIds = aSelectedContexts
+                    .map((oContext) => oContext?.getObject?.()?.ID)
+                    .filter(Boolean);
+
+                if (aRepositoryIds.length === 0) {
+                    MessageToast.show("Select at least one repository to run an audit.");
+                    return;
+                }
+
+                // Get the OData model
+                const oModel = this.getModel();
+                if (!oModel) {
+                    throw new Error("OData model not found");
+                }
+                
+                // Create a function import call using the OData model
+                const oPromise = new Promise((resolve, reject) => {
+                    oModel.callFunction("/analyzeRepositories", {
+                        method: "POST",
+                        urlParameters: {
+                            repositoryIds: aRepositoryIds.join(',')
+                        },
+                        success: function(oData) {
+                            resolve(oData);
+                        },
+                        error: function(oError) {
+                            reject(oError);
+                        }
+                    });
+                });
+                
+                // Handle the result
+                oPromise.then((oResult) => {
+                    const sMessage = oResult?.message || "Audit completed successfully.";
+                    MessageToast.show(sMessage);
+                    
+                    // Refresh the list to show updated data
+                    if (oContext && oContext.getModel) {
+                        oContext.getModel().refresh();
+                    }
+                    
+                    BusyIndicator.hide();
+                }).catch((oError) => {
+                    const sMessage = oError?.message || oError?.responseText || "Something went wrong. Please try again.";
+                    MessageBox.error(sMessage);
+                    BusyIndicator.hide();
+                });
+                
+                return oPromise;
+            } catch (error) {
+                const sMessage = error?.message || error?.responseText || "Something went wrong. Please try again.";
+                MessageBox.error(sMessage);
+            } finally {
+                BusyIndicator.hide();
+            }
+        },
+
+        // No helper methods needed anymore - everything is inline
+    };
+});

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+    <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/Common.xml">
+        <edmx:Include Alias="Common" Namespace="com.sap.vocabularies.Common.v1"/>
+    </edmx:Reference>
+    <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/UI.xml">
+        <edmx:Include Alias="UI" Namespace="com.sap.vocabularies.UI.v1"/>
+    </edmx:Reference>
+    <edmx:DataServices>
+        <Schema Namespace="security.annotations" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+            <Annotations Target="RepositoryService.Repositories">
+                <Annotation Term="UI.FieldGroup" Qualifier="SecurityInfo">
+                    <Record Type="UI.FieldGroupType">
+                        <PropertyValue Property="Data">
+                            <Collection>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Label" String="Status"/>
+                                    <PropertyValue Property="Value" Path="status"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Label" String="Last Analyzed"/>
+                                    <PropertyValue Property="Value" Path="lastAnalyzed"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Label" String="Critical Vulnerabilities"/>
+                                    <PropertyValue Property="Value" Path="criticalVulnerabilities"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Label" String="High Vulnerabilities"/>
+                                    <PropertyValue Property="Value" Path="highVulnerabilities"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                        <PropertyValue Property="Label" String="Security Information"/>
+                    </Record>
+                </Annotation>
+                <Annotation Term="UI.Facets">
+                    <Collection>
+                        <Record Type="UI.ReferenceFacet">
+                            <PropertyValue Property="ID" String="GeneralInfo"/>
+                            <PropertyValue Property="Label" String="General Information"/>
+                            <PropertyValue Property="Target" AnnotationPath="@UI.FieldGroup#GeneralInfo"/>
+                        </Record>
+                        <Record Type="UI.ReferenceFacet">
+                            <PropertyValue Property="ID" String="SecurityInfo"/>
+                            <PropertyValue Property="Label" String="Security Information"/>
+                            <PropertyValue Property="Target" AnnotationPath="@UI.FieldGroup#SecurityInfo"/>
+                        </Record>
+                        <Record Type="UI.ReferenceFacet">
+                            <PropertyValue Property="ID" String="Dependencies"/>
+                            <PropertyValue Property="Label" String="Dependencies"/>
+                            <PropertyValue Property="Target" AnnotationPath="dependencies/@UI.LineItem"/>
+                        </Record>
+                        <Record Type="UI.ReferenceFacet">
+                            <PropertyValue Property="ID" String="AuditResults"/>
+                            <PropertyValue Property="Label" String="Audit Results"/>
+                            <PropertyValue Property="Target" AnnotationPath="auditResults/@UI.LineItem"/>
+                        </Record>
+                        <Record Type="UI.ReferenceFacet">
+                            <PropertyValue Property="ID" String="SecurityAdvisories"/>
+                            <PropertyValue Property="Label" String="Security Advisories"/>
+                            <PropertyValue Property="Target" AnnotationPath="securityAdvisories/@UI.LineItem"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            
+            <Annotations Target="RepositoryService.SecurityAdvisories">
+                <Annotation Term="UI.LineItem">
+                    <Collection>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Label" String="Advisory ID"/>
+                            <PropertyValue Property="Value" Path="advisoryId"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Label" String="Package Name"/>
+                            <PropertyValue Property="Value" Path="packageName"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Label" String="Severity"/>
+                            <PropertyValue Property="Value" Path="severity"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Label" String="Vulnerable Versions"/>
+                            <PropertyValue Property="Value" Path="vulnerableVersions"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Label" String="Title"/>
+                            <PropertyValue Property="Value" Path="title"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Label" String="CVSS Score"/>
+                            <PropertyValue Property="Value" Path="cvssScore"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="UI.Facets">
+                    <Collection>
+                        <Record Type="UI.ReferenceFacet">
+                            <PropertyValue Property="ID" String="AdvisoryDetails"/>
+                            <PropertyValue Property="Label" String="Advisory Details"/>
+                            <PropertyValue Property="Target" AnnotationPath="@UI.FieldGroup#AdvisoryDetails"/>
+                        </Record>
+                        <Record Type="UI.ReferenceFacet">
+                            <PropertyValue Property="ID" String="Findings"/>
+                            <PropertyValue Property="Label" String="Findings"/>
+                            <PropertyValue Property="Target" AnnotationPath="findings/@UI.LineItem"/>
+                        </Record>
+                        <Record Type="UI.ReferenceFacet">
+                            <PropertyValue Property="ID" String="Actions"/>
+                            <PropertyValue Property="Label" String="Recommended Actions"/>
+                            <PropertyValue Property="Target" AnnotationPath="actions/@UI.LineItem"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+                <Annotation Term="UI.FieldGroup" Qualifier="AdvisoryDetails">
+                    <Record Type="UI.FieldGroupType">
+                        <PropertyValue Property="Data">
+                            <Collection>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Label" String="Advisory ID"/>
+                                    <PropertyValue Property="Value" Path="advisoryId"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Label" String="Package Name"/>
+                                    <PropertyValue Property="Value" Path="packageName"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Label" String="Title"/>
+                                    <PropertyValue Property="Value" Path="title"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Label" String="Severity"/>
+                                    <PropertyValue Property="Value" Path="severity"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Label" String="CVSS Score"/>
+                                    <PropertyValue Property="Value" Path="cvssScore"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Label" String="Vulnerable Versions"/>
+                                    <PropertyValue Property="Value" Path="vulnerableVersions"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Label" String="Recommendation"/>
+                                    <PropertyValue Property="Value" Path="recommendation"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Label" String="CVEs"/>
+                                    <PropertyValue Property="Value" Path="cves"/>
+                                </Record>
+                                <Record Type="UI.DataField">
+                                    <PropertyValue Property="Label" String="More Info"/>
+                                    <PropertyValue Property="Value" Path="url"/>
+                                </Record>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+
+            <Annotations Target="RepositoryService.AdvisoryFindings">
+                <Annotation Term="UI.LineItem">
+                    <Collection>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Label" String="Version"/>
+                            <PropertyValue Property="Value" Path="version"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Label" String="Dependency Paths"/>
+                            <PropertyValue Property="Value" Path="paths"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+
+            <Annotations Target="RepositoryService.AdvisoryActions">
+                <Annotation Term="UI.LineItem">
+                    <Collection>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Label" String="Action"/>
+                            <PropertyValue Property="Value" Path="action"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Label" String="Module"/>
+                            <PropertyValue Property="Value" Path="module"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Label" String="Target"/>
+                            <PropertyValue Property="Value" Path="target"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Label" String="Major Update"/>
+                            <PropertyValue Property="Value" Path="isMajor"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

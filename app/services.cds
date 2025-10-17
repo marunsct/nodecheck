@@ -3,3 +3,5 @@
 */
 using from './common';
 using from './repositories/fiori-service';
+
+using from './repositories1/annotations';

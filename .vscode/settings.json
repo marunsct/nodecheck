@@ -7,5 +7,7 @@
     // "csv (semicolon)",
     // "tab",
     // "tsv"
-  ]
+  ],
+  "SAP HANA Database Explorer.ShowXsAdvancedConnections": true,
+  "SAP HANA Project Explorer.bind.confirm automatic undeployment": false
 }

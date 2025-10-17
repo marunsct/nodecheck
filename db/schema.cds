@@ -27,4 +27,35 @@ entity AuditResults : cuid, managed {
   severity        : String(20);  // info, low, moderate, high, critical
   count           : Integer default 0;
   timestamp       : DateTime;
+  advisories      : Composition of many SecurityAdvisories on advisories.auditResult = $self;
+}
+
+entity SecurityAdvisories : cuid, managed {
+  auditResult         : Association to AuditResults;
+  packageName         : String(255);
+  advisoryId          : String(50);
+  title               : String(500);
+  severity            : String(20);
+  vulnerableVersions  : String(255);
+  recommendation      : String(500);
+  url                 : String(1000);
+  cves                : String(500);  // JSON array as string
+  cvssScore           : Decimal(3,1);
+  findings            : Composition of many AdvisoryFindings on findings.advisory = $self;
+  actions             : Composition of many AdvisoryActions on actions.advisory = $self;
+}
+
+entity AdvisoryFindings : cuid {
+  advisory            : Association to SecurityAdvisories;
+  version             : String(50);
+  paths               : String(1000);  // JSON array as string
+}
+
+entity AdvisoryActions : cuid {
+  advisory            : Association to SecurityAdvisories;
+  action              : String(50);  // install, remove, etc.
+  module              : String(255);
+  target              : String(50);
+  isMajor             : Boolean;
+  resolves            : String(500);  // JSON array as string
 }

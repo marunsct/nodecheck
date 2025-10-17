@@ -1,0 +1,2 @@
+sap.ui.define(["sap/m/MessageToast"],function(n){"use strict";return{onGetRepo:function(o,e){n.show("Custom handler invoked.")},onAudit:function(){n.show("Custom handler invoked.")}}});
+//# sourceMappingURL=CustomActions.js.map

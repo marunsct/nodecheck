@@ -9,7 +9,7 @@ const {
 } = require('./lib/analysis-helper');
 
 module.exports = cds.service.impl(async function () {
-  const { Repositories, Dependencies, AuditResults } = this.entities;
+  const { Repositories, Dependencies, AuditResults, SecurityAdvisories, AdvisoryFindings, AdvisoryActions } = this.entities;
 
   // GitHub token - in production, this should come from user session or environment
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
@@ -30,8 +30,16 @@ module.exports = cds.service.impl(async function () {
       // Store repositories in database
       for (const repo of repos) {
         const existing = await SELECT.one.from(Repositories).where({ fullName: repo.fullName });
-        
-        if (!existing) {
+
+        if (existing) {
+          await UPDATE(Repositories)
+            .set({
+              name: repo.name,
+              provider: repo.provider,
+              url: repo.url,
+            })
+            .where({ ID: existing.ID });
+        } else {
           await INSERT.into(Repositories).entries({
             name: repo.name,
             fullName: repo.fullName,
@@ -124,17 +132,116 @@ module.exports = cds.service.impl(async function () {
             await INSERT.into(Dependencies).entries(dependencyEntries);
           }
 
-          // Run audit (mock for now)
+          // Run npm audit with enhanced details
           const auditResults = await auditDependencies(dependencies);
           
-          // Insert audit results
-          const auditEntries = auditResults.map(result => ({
-            repository_ID: repoId,
-            severity: result.severity,
-            count: result.count,
-            timestamp: new Date().toISOString(),
-          }));
+          // Insert basic audit results and get generated IDs
+          const timestamp = new Date().toISOString();
+          const auditEntries = [];
+          for (const result of auditResults) {
+            // Skip entries where we're just adding them to the array object
+            if (typeof result === 'object' && !Array.isArray(result) && result.severity) {
+              auditEntries.push({
+                repository_ID: repoId,
+                severity: result.severity,
+                count: result.count,
+                timestamp: timestamp,
+              });
+            }
+          }
+          
           await INSERT.into(AuditResults).entries(auditEntries);
+          
+          // Get the inserted audit records with their generated IDs
+          const insertedAudits = await SELECT.from(AuditResults)
+            .where({ repository_ID: repoId, timestamp: timestamp });
+          
+          // Store detailed advisories if available
+          if (auditResults.detailedAdvisories && auditResults.detailedAdvisories.length > 0) {
+            // Get the audit result ID for critical severity
+            const criticalAudit = insertedAudits.find(a => a.severity === 'critical');
+            const highAudit = insertedAudits.find(a => a.severity === 'high');
+            const moderateAudit = insertedAudits.find(a => a.severity === 'moderate');
+            const lowAudit = insertedAudits.find(a => a.severity === 'low');
+            
+            // Process each advisory and link to appropriate severity audit result
+            for (const advisory of auditResults.detailedAdvisories) {
+              let auditResultId;
+              
+              // Determine which audit result to associate with based on severity
+              switch(advisory.severity) {
+                case 'critical':
+                  auditResultId = criticalAudit?.ID;
+                  break;
+                case 'high':
+                  auditResultId = highAudit?.ID;
+                  break;
+                case 'moderate':
+                  auditResultId = moderateAudit?.ID;
+                  break;
+                default:
+                  auditResultId = lowAudit?.ID;
+              }
+              
+              if (!auditResultId) continue;
+              
+              // Insert security advisory
+              const advisoryEntry = {
+                auditResult_ID: auditResultId,
+                packageName: advisory.packageName,
+                advisoryId: advisory.id?.toString() || '',
+                title: advisory.title || '',
+                severity: advisory.severity || '',
+                vulnerableVersions: advisory.vulnerableVersions || '',
+                recommendation: advisory.recommendation || '',
+                url: advisory.url || '',
+                cves: JSON.stringify(advisory.cves || []),
+                cvssScore: advisory.cvss || 0
+              };
+              
+              const result = await INSERT.into(SecurityAdvisories).entries(advisoryEntry);
+              const advisoryId = result.data?.ID;
+              
+              if (advisoryId) {
+                // Insert findings
+                if (advisory.findings && advisory.findings.length > 0) {
+                  const findingEntries = advisory.findings.map(finding => ({
+                    advisory_ID: advisoryId,
+                    version: finding.version || '',
+                    paths: JSON.stringify(finding.paths || [])
+                  }));
+                  await INSERT.into(AdvisoryFindings).entries(findingEntries);
+                }
+              }
+            }
+            
+            // Insert recommended actions if available
+            if (auditResults.recommendedActions && auditResults.recommendedActions.length > 0) {
+              for (const action of auditResults.recommendedActions) {
+                // Find the associated advisory for this action
+                const packageName = action.module;
+                const advisories = await SELECT.from(SecurityAdvisories)
+                  .where({ 
+                    packageName: packageName,
+                    auditResult_ID: { in: insertedAudits.map(a => a.ID) }
+                  });
+                
+                if (advisories && advisories.length > 0) {
+                  // Add action for each related advisory
+                  for (const advisory of advisories) {
+                    await INSERT.into(AdvisoryActions).entries({
+                      advisory_ID: advisory.ID,
+                      action: action.action || '',
+                      module: action.module || '',
+                      target: action.target || '',
+                      isMajor: action.isMajor || false,
+                      resolves: JSON.stringify(action.resolves || [])
+                    });
+                  }
+                }
+              }
+            }
+          }
 
           // Update repository status
           const status = determineStatus(auditResults);

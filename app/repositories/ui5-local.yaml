@@ -1,0 +1,46 @@
+specVersion: "3.1"
+metadata:
+  name: nodecheck.repositories
+type: application
+framework:
+  name: SAPUI5
+  version: 1.141.1
+  libraries:
+    - name: sap.fe.templates
+    - name: sap.m
+    - name: sap.ushell
+    - name: themelib_sap_bluecrystal
+    - name: themelib_sap_horizon
+server:
+  customMiddleware:
+    - name: fiori-tools-proxy
+      afterMiddleware: compression
+      configuration:
+        ignoreCertError: false
+        backend:
+          - path: /sap
+            url: ""
+            destination: MANUAL_INPUT
+          - path: /odata/v4/repository/
+            url: ""
+            destination: MANUAL_INPUT
+    - name: sap-fe-mockserver
+      beforeMiddleware: fiori-tools-proxy
+      configuration:
+        service:
+          urlBasePath: /odata/v4/repository
+          name: ""
+          metadataXmlPath: ./webapp/localservice/metadata.xml
+          mockdataRootPath: ./webapp/localService/mockdata
+          generateMockData: true
+    - name: fiori-tools-appreload
+      afterMiddleware: compression
+      configuration:
+        port: 35729
+        path: webapp
+        delay: 300
+    - name: fiori-tools-preview
+      afterMiddleware: fiori-tools-appreload
+      configuration:
+        component: nodecheck.repositories
+        ui5Theme: sap_horizon
